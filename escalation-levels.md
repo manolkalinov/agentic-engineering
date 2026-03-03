@@ -1,3 +1,8 @@
+---
+layout: page
+title: Escalation Levels
+---
+
 # Escalation Levels for AI Agents
 
 **Purpose:** Define when your AI should proceed autonomously and when it should stop and ask. Feed this file to your AI at the start of a session.

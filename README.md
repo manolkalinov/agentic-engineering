@@ -31,6 +31,10 @@ See **[index.md](index.md)** for a structured overview with descriptions and sug
 
 *More files shipping weekly. Follow [Mats Ljunggren on LinkedIn](https://www.linkedin.com/in/matsljunggren/) for context and war stories behind each one.*
 
+## Browse Online
+
+Visit the site: **[ljunggren.github.io/agentic-engineering](https://ljunggren.github.io/agentic-engineering/)**
+
 ## About
 
 Built by [Mats Ljunggren](https://www.linkedin.com/in/matsljunggren/) from daily production use across 17 repos. 22 years of enterprise IT, now focused on making human-AI collaboration reliable, repeatable, and safe.

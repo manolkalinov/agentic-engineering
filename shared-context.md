@@ -1,3 +1,8 @@
+---
+layout: page
+title: Shared Context
+---
+
 # Shared Context
 
 **Purpose:** Commit your AI's memory to the repo so every developer's AI gets smarter on every push.

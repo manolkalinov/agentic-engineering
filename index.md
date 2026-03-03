@@ -1,3 +1,8 @@
+---
+layout: page
+title: Index
+---
+
 # Agentic Engineering — Index
 
 A structured reference to every methodology file in this repo. Start wherever makes sense for you, or follow the suggested order below.

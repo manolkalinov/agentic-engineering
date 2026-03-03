@@ -1,3 +1,8 @@
+---
+layout: page
+title: Custom Commands & Memory
+---
+
 # Custom Commands & AI Memory
 
 **Purpose:** End the cold start. Give your AI memory that persists across sessions.

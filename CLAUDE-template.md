@@ -1,3 +1,8 @@
+---
+layout: page
+title: CLAUDE.md Template
+---
+
 # CLAUDE.md — Starter Template
 
 **Purpose:** The entry point for Claude Code. This file is auto-loaded when Claude Code opens your project. Use it to point to your `.agent/` directory where the real rules live.

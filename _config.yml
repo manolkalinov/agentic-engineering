@@ -1,0 +1,18 @@
+title: Agentic Engineering
+description: Actionable methodology files for human-AI collaboration
+author: Mats Ljunggren
+url: "https://ljunggren.github.io"
+baseurl: "/agentic-engineering"
+
+theme: minima
+
+permalink: /blog/:title/
+
+exclude:
+  - _tools
+  - node_modules
+  - package.json
+  - package-lock.json
+  - "*.png"
+  - "*.jpg"
+  - LICENSE

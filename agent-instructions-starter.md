@@ -1,3 +1,8 @@
+---
+layout: page
+title: Agent Instructions Starter
+---
+
 # Agent Instructions — Starter Template
 
 **Purpose:** Give your AI context and boundaries from the first message. Copy this file into your project as `.agent/instructions.md` and customize it. Feed it to your AI at the start of every session, or configure your tool to load it automatically.
