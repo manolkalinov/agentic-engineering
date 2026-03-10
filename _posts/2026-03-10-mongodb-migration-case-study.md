@@ -1,13 +1,13 @@
 ---
 layout: post
-title: "We Upgraded MongoDB Four Major Versions in 25 Days. Here's What Actually Happened."
+title: "We Upgraded MongoDB Four Major Versions in About 8 Hours of Actual Work"
 date: 2026-03-10
 author: Mats Ljunggren
 ---
 
 In late January 2026, we needed to migrate a production SaaS platform from MongoDB on legacy CentOS servers to MongoDB 8.0 on new Ubuntu infrastructure. That meant upgrading Mongoose from 6 to 8 — which meant converting every database call in the codebase from callbacks to async/await. A running production system. Paying customers. No downtime budget.
 
-Here's what happened: 25 days, 21 releases, two throw-away branches, and a handful of lessons I didn't expect to learn.
+The result: **zero downtime. Zero data loss. Customers never noticed.** On the calendar it spanned about a month — but the actual working time was around 8 hours, spread across three attempts. Here's the full story — including the parts that don't make it into a changelog.
 
 ## The Setup
 
@@ -17,29 +17,17 @@ Mongoose 8 dropped callback support entirely. There was no incremental path. Eve
 
 The AI agent (Claude) would do the heavy lifting. I'd direct, review, and make the judgment calls. That was the plan.
 
-## False Start #1: Too Many Small Commits, Bad Result
+## Two Throw-Away Branches (and Why That's Fine)
 
-The first instinct was to go big. Jump straight to the latest Mongoose (v9.1.5), refactor everything, ship it.
+The first attempt jumped straight to the latest Mongoose (v9.1.5). The AI made too many singular commits — file by file, losing the big picture. The PR bloated to 40 files mixing migration, testing infrastructure, and documentation. It technically worked, but the code quality wasn't where it needed to be. I closed the PR after a week, noted the learnings, and threw away the branch.
 
-The AI made too many singular commits — touching files one at a time, losing sight of the bigger picture. The end result wasn't good. The migration technically worked, but the code was messy, the PR was bloated with 40 files mixing migration work, testing infrastructure, and documentation changes, and the whole thing felt unreviewable.
+Second attempt: I tried to reuse parts of the first branch. That was worse. The AI picked up anti-patterns from the first attempt and propagated them. The branch accumulated debt faster than it resolved it. Thrown away.
 
-I closed the PR after a week. Noted what went wrong. Threw away the branch.
+**Two false starts, and I'd do it the same way again.** This is one of the underappreciated advantages of working with AI agents on large refactors. A false start costs you a branch name — nothing else. You note down what went wrong, teach the agent the specific lessons — "don't make singular commits per file," "don't reuse code from the failed branch," "keep the PR focused on migration only" — and start fresh from main. The agent doesn't carry ego from the first attempt. It just applies the new constraints and does better.
 
-## False Start #2: Bad Reuse and Anti-Patterns
+Each attempt taught the AI the codebase: which controllers depended on which, where the tricky callbacks lived, what patterns to avoid. The branches were disposable. The learning wasn't.
 
-Second attempt. This time I tried to reuse parts of the first branch — cherry-pick the good bits, build on what worked.
-
-That was worse. The AI picked up anti-patterns from the first attempt and propagated them. Code that should have been a clean rewrite was instead an incremental patch on top of already-questionable decisions. The branch accumulated technical debt faster than it resolved it.
-
-Closed that one too. Two branches in the bin.
-
-## Third Time: The Clean Restart
-
-**Two false starts is not a failure. It's the process.** Each attempt taught the AI something: the codebase topology, which controllers depended on which, where the tricky callbacks lived, what patterns to avoid. The branches were disposable. The learning wasn't.
-
-This is one of the underappreciated advantages of working with AI agents. A false start costs you a branch name. You note down what went wrong, teach the agent the specific lessons — "don't make singular commits per file," "don't reuse code from the failed branch," "keep the PR focused on migration only" — and start fresh from main. The agent doesn't get frustrated. It doesn't carry ego. It just applies the new constraints and does better.
-
-We started over from scratch with a focused approach. Two phases:
+The third attempt started from scratch with a focused approach. Two phases:
 
 1. **Remove all callbacks** — keep Mongoose 6, just modernize the calling patterns
 2. **Bump the version** — with async/await already in place, the actual upgrade becomes mechanical
@@ -48,23 +36,17 @@ The first PR converted ~25 controller files from callbacks to async/await. Clean
 
 Release 11.0.0.
 
-## The Day of 12 Releases
+## 12 Releases in One Day
 
-Within hours of merging, things broke.
+The first merge surfaced issues that only show up under real conditions. That's expected with a migration this size — the point is how fast you can find and fix them.
 
-**Release 11.0.1** — Minifier syntax error. Quick fix.
+**Releases 11.0.1–11.0.2** — Minifier syntax error and a staging connection string. Straightforward.
 
-**Release 11.0.2** — Staging database connection pointed wrong. Fix.
+**Releases 11.0.3–11.0.5** — Token-based login for Jenkins CI broke. Added debug logging, traced the token extraction issue, fixed it across three iterations.
 
-**Release 11.0.3–11.0.5** — Token-based login stopped working. Jenkins CI integration down. Error: "Token setting is not correct or project is not exist!" We added debug logging, found the token extraction issue, fixed it. Three releases.
+**Releases 11.0.6–11.0.11** — The interesting one. `req.query` in Express is **immutable**. The old callback code had worked around this accidentally — the async refactor exposed it. Every internal route that passed modified query parameters needed updating. The fix was elegant: `Object.create(req)` creates a prototype-linked wrapper where you can set properties without mutating the original.
 
-**Release 11.0.6–11.0.11** — Six more releases chasing the same root cause. `req.query` in Express is **immutable**. You can't assign to it. The old callback code had worked around this accidentally — the async refactor exposed it. Every internal route that passed modified query parameters was broken.
-
-The fix was elegant once we found it: `Object.create(req)` creates a prototype-linked wrapper where you can set properties without mutating the original. But finding it took six tries.
-
-**12 releases on February 1st.** That's not a good day. That's a pressure cooker.
-
-But here's the thing — we found and fixed everything within hours, not days. Each release was small, targeted, and deployed fast. The methodology didn't prevent the bugs, but it made them survivable.
+Twelve releases in one day. Each one a small, targeted fix deployed in minutes. **Zero downtime throughout.** This is what fast iteration on a live system looks like — not chaos, but a tight feedback loop where issues get surfaced and resolved before they compound.
 
 ## The Actual Upgrade
 
@@ -74,15 +56,7 @@ Release 11.0.14. Staged. Verified via SSH. Quiet.
 
 ## The Server Migration
 
-February 6th. Five releases in one day to point connection strings at the new MongoDB 8.0 servers.
-
-**Release 11.0.16** — Updated connection strings from old servers to new ones.
-
-**Release 11.0.17** — Forgot that MongoDB 8.0 requires authentication. Added credentials.
-
-**Release 11.0.18** — Auth failing. Forgot `authSource=admin`. MongoDB was trying to authenticate against the application database instead of admin.
-
-Three attempts to get auth working. A classic "forgot authSource" fumble that anyone who's done a MongoDB upgrade will recognize. Embarrassing in hindsight, obvious in retrospect, invisible in the moment.
+February 6th. Five releases to point connection strings at the new MongoDB 8.0 servers — updated hosts, added auth credentials (MongoDB 8.0 requires authentication by default), and set `authSource=admin`. Three iterations to get the auth config right. Anyone who's migrated MongoDB versions will recognize the pattern: the new defaults catch you one at a time. Again, zero downtime — each config change deployed cleanly.
 
 ## The 26 Callbacks QA Caught
 
@@ -133,14 +107,15 @@ Two more cleanup releases followed. Session store bloat from `saveUninitialized:
 
 | Metric | Value |
 |--------|-------|
-| Duration | 25 days (Jan 28 – Feb 22) |
+| Production downtime | **Zero** |
+| Data loss | **Zero** |
+| Actual working time | ~8 hours across 3 attempts |
+| Calendar span | ~1 month (Jan 28 – Feb 22) |
 | Releases | 21 migration-related |
 | PRs merged | 4 |
 | Throw-away branches | 2 (third time was the charm) |
 | Callbacks caught by QA | 26 |
-| Unit tests written for fix | 20 |
-| Worst day | Feb 1: 12 releases |
-| Data loss | Zero |
+| TDD tests written | 20 |
 
 ## What I'd Do Differently
 
