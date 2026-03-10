@@ -19,7 +19,7 @@ The AI agent (Claude) would do the heavy lifting. I'd direct, review, and make t
 
 ## Two Throw-Away Branches (and Why That's Fine)
 
-The first attempt jumped straight to Mongoose 9 (the latest at the time) instead of the target 8. The AI made too many singular commits — file by file, losing the big picture. The PR bloated to 40 files mixing migration, testing infrastructure, and documentation. It technically worked, but the code quality wasn't where it needed to be. I closed the PR after a week, noted the learnings, and threw away the branch.
+The first attempt tried to do everything at once. The AI made too many singular commits — file by file, losing the big picture. The PR bloated to 40 files mixing migration, testing infrastructure, and documentation. It technically worked, but the code quality wasn't where it needed to be. I closed the PR after a week, noted the learnings, and threw away the branch.
 
 Second attempt: I tried to reuse parts of the first branch. The AI picked up patterns from the first attempt — including the ones that weren't good enough — and carried them forward. The result was better than attempt one, but still not where it needed to be. Thrown away.
 
